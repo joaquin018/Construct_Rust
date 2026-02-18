@@ -2,8 +2,11 @@ import { IconButton } from "icon_button.slint";
 
 export component TopBar inherits Rectangle {
     in property <string> title: "CONSTRUCT";
+    in-out property <bool> is-editing: false;
+    property <string> editing-buffer: "";
     callback selective-share-pressed();
     callback trash-pressed();
+    callback rename-done(string);
     height: 90px;
     background: transparent;
     HorizontalLayout {
@@ -11,16 +14,57 @@ export component TopBar inherits Rectangle {
         padding-left: 20px;
         padding-right: 0px;
         spacing: 5px;
-        // alignment: start; // Removed to allow spacer to push content to edges
-        Text {
-            text: root.title;
-            font-size: 22px;
-            font-weight: 900;
-            color: #ffffff;
-            vertical-alignment: center;
-            letter-spacing: 2px;
-            overflow: elide;
+        Rectangle {
             horizontal-stretch: 1;
+            Text {
+                visible: !root.is-editing;
+                text: root.title;
+                font-size: 22px;
+                font-weight: 900;
+                color: #ffffff;
+                vertical-alignment: center;
+                letter-spacing: 2px;
+                overflow: elide;
+            }
+
+            input := TextInput {
+                visible: root.is-editing;
+                text <=> root.editing-buffer;
+                font-size: 22px;
+                font-weight: 900;
+                color: #ffffff;
+                vertical-alignment: center;
+                single-line: true;
+                letter-spacing: 2px;
+                selection-background-color: #FFAB4066;
+                selection-foreground-color: #ffffff;
+                accepted => {
+                    root.is-editing = false;
+                    root.rename-done(self.text);
+                }
+            }
+
+            TouchArea {
+                enabled: !root.is-editing;
+                pointer-event(event) => {
+                    if (event.kind == PointerEventKind.down) {
+                        long-press-timer.running = true;
+                    } else if (event.kind == PointerEventKind.up || event.kind == PointerEventKind.cancel) {
+                        long-press-timer.running = false;
+                    }
+                }
+            }
+
+            long-press-timer := Timer {
+                interval: 1s;
+                triggered => {
+                    self.running = false;
+                    root.editing-buffer = root.title;
+                    root.is-editing = true;
+                    input.focus();
+                    input.select-all();
+                }
+            }
         }
 
         HorizontalLayout {

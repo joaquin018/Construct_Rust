@@ -278,6 +278,28 @@ pub fn run() -> Result<(), slint::PlatformError> {
              }
         }
     });
+    
+    // Rename Active Project
+    let state_weak_rename_active = state_rc.clone();
+    let ui_weak_rename_active = ui_handle.clone();
+    ui.on_request_rename_active_project(move |new_name| {
+        let mut state = state_weak_rename_active.borrow_mut();
+        let active_id = state.active_project_id.clone();
+        if let Some(active_id) = active_id {
+            if let Some(proj) = state.projects.iter_mut().find(|p| p.id == active_id) {
+                proj.name = new_name.to_string();
+                let actual_new_name: slint::SharedString = proj.name.clone().into();
+                save_state(&state);
+                
+                if let Some(ui) = ui_weak_rename_active.upgrade() {
+                    ui.set_active_project_name(actual_new_name);
+                    // Update project names list for the list view
+                    let names: Vec<slint::SharedString> = state.projects.iter().map(|p| p.name.clone().into()).collect();
+                    ui.set_project_names(std::rc::Rc::new(slint::VecModel::from(names)).into());
+                }
+            }
+        }
+    });
 
     // Append Digit
     let state_weak_append = state_rc.clone();

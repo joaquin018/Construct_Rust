@@ -141,6 +141,7 @@ export component AppWindow inherits Window {
     callback request-set-length(int, int);
     callback request-backspace();
     callback request-share-picker-open();
+    callback request-rename-active-project(string);
     invoke-transition-to-editor => {
         root.view-mode = 1;
         root.active_idx = -1;
@@ -186,7 +187,7 @@ export component AppWindow inherits Window {
                         inv_vals <=> root.inv_vals;
                         inv_lengths <=> root.inv_lengths;
                         active_idx <=> root.active_idx;
-                        viewport-y <=> root.viewport_y-tracker;
+                        viewport-y <=> root.viewport-y-tracker;
                         selective-share-pressed => {
                             root.active_idx = -1;
                             root.show_share_picker = true;
@@ -207,6 +208,9 @@ export component AppWindow inherits Window {
                         }
                         request-backspace => {
                             root.request-backspace();
+                        }
+                        rename-done(name) => {
+                            root.request-rename-active-project(name);
                         }
                     }
                     if (root.current_screen == 1): DoorScreen {
@@ -235,6 +239,9 @@ export component AppWindow inherits Window {
                         request-backspace => {
                             root.request-backspace();
                         }
+                        rename-done(name) => {
+                            root.request-rename-active-project(name);
+                        }
                     }
                     if (root.current_screen == 2): RoofScreen {
                         width: 100%;
@@ -261,6 +268,9 @@ export component AppWindow inherits Window {
                         }
                         request-backspace => {
                             root.request-backspace();
+                        }
+                        rename-done(name) => {
+                            root.request-rename-active-project(name);
                         }
                     }
                     if (root.current_screen == 3): InsulationScreen {
@@ -289,6 +299,9 @@ export component AppWindow inherits Window {
                         request-backspace => {
                             root.request-backspace();
                         }
+                        rename-done(name) => {
+                            root.request-rename-active-project(name);
+                        }
                     }
                     if (root.current_screen == 4): InteriorScreen {
                         width: 100%;
@@ -315,6 +328,9 @@ export component AppWindow inherits Window {
                         }
                         request-backspace => {
                             root.request-backspace();
+                        }
+                        rename-done(name) => {
+                            root.request-rename-active-project(name);
                         }
                     }
                 }

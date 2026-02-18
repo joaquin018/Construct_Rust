@@ -13,6 +13,7 @@ export component BaseScreen inherits Rectangle {
     in-out property <length> viewport-y; // Exposed for scroll tracking
     callback selective-share-pressed();
     callback trash-pressed();
+    callback rename-done(string);
     callback request-activate-item(int);
     callback request-append-digit(string);
     callback request-set-length(int, int); // idx, length_idx
@@ -26,6 +27,9 @@ export component BaseScreen inherits Rectangle {
             }
             trash-pressed => {
                 root.trash-pressed();
+            }
+            rename-done(name) => {
+                root.rename-done(name);
             }
         }
 

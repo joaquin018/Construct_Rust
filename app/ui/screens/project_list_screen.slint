@@ -22,7 +22,6 @@ export component ProjectListScreen inherits Rectangle {
     // Rename
     property <int> rename-index: -1;
     property <string> rename-buffer: "";
-    property <bool> show-rename-dialog: false;
 
     // Delete Confirmation
     property <int> delete-target-index: -1;
@@ -65,7 +64,7 @@ export component ProjectListScreen inherits Rectangle {
                         spacing: 20px;
                         alignment: space-between;
                         
-                        // Icon + Text
+                            // Icon + Text
                         HorizontalLayout {
                             horizontal-stretch: 1;
                             spacing: 16px;
@@ -85,13 +84,35 @@ export component ProjectListScreen inherits Rectangle {
                                 }
                             }
 
-                            Text {
-                                text: name;
-                                color: #FFFFFF;
-                                font-size: 18px;
-                                font-weight: 600;
-                                vertical-alignment: center;
-                                overflow: elide;
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                height: 40px;
+                                y: (parent.height - self.height) / 2;
+                                Text {
+                                    visible: root.rename-index != i;
+                                    text: name;
+                                    color: #FFFFFF;
+                                    font-size: 18px;
+                                    font-weight: 600;
+                                    vertical-alignment: center;
+                                    overflow: elide;
+                                }
+
+                                rename-input := TextInput {
+                                    visible: root.rename-index == i;
+                                    text <=> root.rename-buffer;
+                                    color: #FFFFFF;
+                                    font-size: 18px;
+                                    font-weight: 600;
+                                    vertical-alignment: center;
+                                    single-line: true;
+                                    selection-background-color: #FFAB4066;
+                                    selection-foreground-color: #ffffff;
+                                    accepted => {
+                                        root.rename-project(i, self.text);
+                                        root.rename-index = -1;
+                                    }
+                                }
                             }
                         }
 
@@ -128,8 +149,26 @@ export component ProjectListScreen inherits Rectangle {
                     // Open Click
                     TouchArea {
                         z: -1; // Below actions
-                         clicked => {
+                        pointer-event(event) => {
+                            if (event.kind == PointerEventKind.down) {
+                                lp-timer.running = true;
+                            } else if (event.kind == PointerEventKind.up || event.kind == PointerEventKind.cancel) {
+                                lp-timer.running = false;
+                            }
+                        }
+                        clicked => {
                             root.open-project(i);
+                        }
+                    }
+
+                    lp-timer := Timer {
+                        interval: 1s;
+                        triggered => {
+                            self.running = false;
+                            root.rename-index = i;
+                            root.rename-buffer = name;
+                            rename-input.focus();
+                            rename-input.select-all();
                         }
                     }
                 }
